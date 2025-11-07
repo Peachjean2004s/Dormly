@@ -1,0 +1,73 @@
+
+.payment-result-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 60px;
+  font-family: 'Inter', sans-serif;
+  padding: 24px;
+}
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+.icon-container {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center; 
+}
+.fail-icon {
+  width: 80px;
+  height: 80px;
+}
+.fail-circle {
+  stroke-width: 2;
+  stroke: #EF4444;
+  fill: none;
+}
+.fail-mark {
+  stroke-width: 3;
+  stroke: #EF4444;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.title-fail {
+  font-size: 28px;
+  font-weight: 700;
+  color: #EF4444; /* Red */
+  margin: 0 0 12px;
+}
+.subtitle {
+  font-size: 16px;
+  color: #4b5563;
+  margin: 0;
+  word-wrap: break-word;
+}
+.divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 50px;  
+  margin-bottom: 16px;
+}
+.fail-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #EF4444;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 27px;
+}
+.fail-button:hover {
+  background-color: #DC2626; 
+}

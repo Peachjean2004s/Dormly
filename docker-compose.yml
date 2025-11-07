@@ -1,0 +1,81 @@
+services:
+  # 1. PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: dormly-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Import SQL อัตโนมัติ
+      - ./database/Dormly.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/sprint_dummy_data.sql:/docker-entrypoint-initdb.d/02-dummy-data.sql
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - dormly-network
+
+  # 2. Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dormly-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: 3001
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      OMISE_SECRET_KEY: ${OMISE_SECRET_KEY}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "${BACKEND_PORT}:3001"
+    networks:
+      - dormly-network
+    depends_on:
+      - database
+
+  # 3. Frontend Web Server
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
+    container_name: dormly-frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:3001
+      NODE_ENV: ${NODE_ENV}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.vite
+    ports:
+      - "${FRONTEND_PORT}:5173"
+    networks:
+      - dormly-network
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  dormly-network:
+    driver: bridge
