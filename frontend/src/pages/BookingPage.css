@@ -1,0 +1,15 @@
+.booking-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  min-height: 80vh;
+  background-color: #f8f9fa; /* (สีพื้นหลังอ่อนๆ) */
+}
+
+/* (CSS สำหรับ Loading/Error) */
+.loading-container, .error-message {
+  padding: 40px;
+  text-align: center;
+  font-size: 1.2rem;
+}

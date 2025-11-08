@@ -11,9 +11,5 @@ export default function ChatPage() {
 
     return (
         <NotAvailable />
-        // <div className="p-8">
-        // <h1 className="text-3xl font-bold mb-6">Chat</h1>
-        // <p className="text-gray-600">Chat functionality coming soon...</p>
-        // </div>
     );
 }

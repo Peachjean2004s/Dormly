@@ -1,0 +1,156 @@
+.room-detail-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.room-detail-header {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.room-detail-layout {
+  display: flex;
+  gap: 24px;
+}
+
+/* === 1. Main Content (Left) === */
+.room-main-content {
+  flex: 3;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Gallery */
+.room-main-image {
+  height: 450px;
+  background-color: #f0f2f5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a0;
+  font-size: 1.2rem;
+}
+.room-thumbnail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.room-thumbnail {
+  height: 120px;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a0;
+}
+.room-thumbnail-more {
+  height: 120px;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Info Boxes */
+.room-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.info-box {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+}
+.info-box h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #dcdcdc;
+  padding-bottom: 8px;
+}
+.info-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+.info-box li {
+  margin-bottom: 8px;
+}
+
+/* === 2. Sidebar (Right) === */
+.room-sidebar {
+  flex: 1;
+  min-width: 320px;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Price Card */
+.price-card {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.price-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.price-item span {
+  color: #555;
+}
+.price-item strong {
+  color: #000;
+}
+
+/* Buttons */
+.edit-dorm-btn {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.book-room-btn {
+  background-color: #0d6efd;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.book-room-btn:hover {
+  background-color: #0b5ed7;
+}

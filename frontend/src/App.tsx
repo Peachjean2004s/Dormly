@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/use-auth';
@@ -25,7 +25,8 @@ import MobileBanking from './pages/payment/MobileBanking';
 import QRPayment from './pages/payment/QRPayment'; 
 import Success from './pages/payment/Success';
 import Fail from './pages/payment/Fail';
-
+import RoomDetailPage from './pages/RoomDetailPage';
+import BookingPage from './pages/BookingPage';
 import './App.css';
 
 export type Page = 'checkout' | 'paymentCard' | 'mobileBanking' | 'qrPayment' | 'success' | 'fail';
@@ -108,6 +109,8 @@ function AppRoutes() {
       <Route path="/register-dormowner-form" element={<RegisterDormOwnerFormPage />} />
       <Route path="/" element={<MainLayout>{role === 'dormowner' ? <DormOwnerDashboard /> : <HomePage />}</MainLayout>} />
       <Route path="/dorms/:id" element={<MainLayout><DormDetailPage /></MainLayout>} />
+      <Route path="/rooms/:roomId" element={<MainLayout><RoomDetailPage /></MainLayout>} />
+      <Route path="/dorms/:id/book" element={<MainLayout><BookingPage /></MainLayout>} />
       <Route path="/search" element={ <MainLayout> <SearchPage /> </MainLayout> } />
       <Route path="/favorites" element={ <MainLayout> <FavoritesPage /> </MainLayout> } />
       <Route path="/chat" element={ <MainLayout> <ChatPage /> </MainLayout> } />

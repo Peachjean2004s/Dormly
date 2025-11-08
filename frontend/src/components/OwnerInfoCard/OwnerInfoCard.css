@@ -1,0 +1,72 @@
+.info-section {
+  width: 100%;
+}
+.info-section h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.owner-card-v2 {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.owner-avatar-placeholder-v2 {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  margin-bottom: 12px;
+}
+.owner-card-v2 .owner-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+}
+.owner-card-v2 .owner-handle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+.owner-card-v2 .owner-rating {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+.owner-details-list {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.owner-details-list p {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 6px 0;
+}
+.owner-details-list p strong {
+  color: #555;
+}
+.owner-details-list p span {
+  color: #000;
+  font-weight: 500;
+}
+.view-owner-details-btn-v2 {
+  width: 100%;
+  padding: 10px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.view-owner-details-btn-v2:hover {
+  background-color: #d4d4d4;
+}

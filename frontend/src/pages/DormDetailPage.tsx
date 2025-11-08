@@ -1,56 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './DormDetailPage.css'; 
 import RoomCard from '../components/RoomCard/RoomCard'; 
+import BookingForm from '../components/BookingForm/BookingForm'; 
 
-// --- (ส่วน Types) ---
-interface DormOwner {
-  f_name: string;
-  l_name: string;
-  profile_path: string;
-}
-interface DormData {
-  dorm_id: number;
-  dorm_name: string;
-  description: string;
-  lat: number;
-  long: number;
-  address: string;
-  prov: string;
-  dist: string;
-  subdist: string;
-  avg_score: number;
-  likes: number;
-  medias: string[];
-  tel: string;
-  line_id: string;
-  owner: DormOwner;
-}
-interface RoomData {
-  room_id: string;
-  room_name?: string;
-  status: 'ห้องว่าง' | 'ห้องไม่ว่าง' | string;
-  room_type_name: string;
-  rent_per_month: number;
-  imageUrl: string;
-}
-// --- (จบส่วน Types) ---
+// --- 1. INTERFACES (Types) ---
+import {
+  DormData,
+  RoomData,
+  ActiveTab,
+  ApiResponse
+} from '../components/types/types'; 
 
-// vvvv FIX 3: ขยาย type ของ activeTab vvvv
-type ActiveTab = 'details' | 'rooms' | 'booking' | 'facilities' | 'rules' | 'reviews' | 'map' | 'other';
+
+// --- 2. COMPONENT ---
 
 const DormDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [isLiked, setIsLiked] = useState(false);
+  const navigate = useNavigate(); // (สำหรับย้ายหน้า)
 
-  // --- State สำหรับ UI ---
+  // --- State สำหรับเก็บข้อมูล ---
   const [dormData, setDormData] = useState<DormData | null>(null);
   const [rooms, setRooms] = useState<RoomData[]>([]);
+  
+  // --- State สำหรับ UI ---
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('rooms'); 
+  const [isLiked, setIsLiked] = useState(false); // (สำหรับปุ่มหัวใจ)
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false); // (สำหรับ Pop-up)
 
-  // ตั้งค่าเริ่มต้นให้ activeTab เป็น 'rooms' (ห้องพัก)
-  const [activeTab, setActiveTab] = useState<ActiveTab>('rooms');
+  
+  // --- 3. DATA FETCHING ---
 
   useEffect(() => {
     if (!id) return;
@@ -60,24 +41,35 @@ const DormDetailPage: React.FC = () => {
       setError(null);
       
       try {
-        // 1. Fetch ข้อมูลหอพัก
-        const dormPromise = fetch(`http://localhost:3001/api/dorms/${id}`)
-          .then(res => res.json());
+        
+        // vvvv FIX: ระบุ Type ของ Promise ตรงนี้ vvvv
+        const dormPromise: Promise<ApiResponse<DormData>> = fetch(`http://localhost:3001/api/dorms/${id}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Error fetching dorm');
+            // (ตอนนี้ TS รู้ Type แล้ว ไม่ต้อง cast 'as' ตรงนี้)
+            return res.json();
+          });
 
-        // 2. Fetch ข้อมูลห้องพัก
-        const roomsPromise = fetch(`http://localhost:3001/api/rooms/dorm/${id}`)
-          .then(res => res.json());
-
+        // vvvv FIX: ระบุ Type ของ Promise ตรงนี้ vvvv
+        const roomsPromise: Promise<ApiResponse<RoomData[]>> = fetch(`http://localhost:3001/api/rooms/dorm/${id}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Error fetching rooms');
+            // (ตอนนี้ TS รู้ Type แล้ว ไม่ต้อง cast 'as' ตรงนี้)
+            return res.json();
+          });
+        // ^^^^ สิ้นสุด FIX ^^^^
+        
+        // (ตอนนี้ TS จะไม่สับสนตอนรัน Promise.all)
         const [dormResult, roomsResult] = await Promise.all([dormPromise, roomsPromise]);
 
-        // 3. ตั้งค่า State ของ Dorm
+        // 3. จัดการข้อมูล Dorm
         if (dormResult.success && dormResult.data) {
           setDormData(dormResult.data);
         } else {
           throw new Error(dormResult.message || 'Dorm not found');
         }
 
-        // 4. ตั้งค่า State ของ Rooms
+        // 4. จัดการข้อมูล Rooms
         if (roomsResult.success && roomsResult.data) {
           setRooms(roomsResult.data);
         } else {
@@ -100,7 +92,8 @@ const DormDetailPage: React.FC = () => {
   }, [id]);
 
   
-  // --- ส่วนจัดการ Loading / Error ---
+  // --- 4. LOADING & ERROR STATES ---
+
   if (isLoading) {
     return <div className="loading-container">Loading Dorm Details...</div>;
   }
@@ -111,24 +104,43 @@ const DormDetailPage: React.FC = () => {
     return <div className="error-message">Dorm data not available.</div>;
   }
 
-  // --- UI ที่แก้ไขแล้ว ---
+  // --- 5. Helper Functions & Variables ---
+
+  // (FIX: แปลง avg_score (String) เป็น Number)
+  const avgScoreNumber = Number(dormData.avg_score);
+  
+  // (FIX: คำนวณค่า Occupancy)
+  const availableRooms = rooms.filter(r => r.status === 'ห้องว่าง').length;
+  const occupiedRooms = rooms.filter(r => r.status === 'ห้องไม่ว่าง').length;
+
+  // (FIX: ฟังก์ชันสำหรับคลิก RoomCard)
+  const handleRoomClick = (room: RoomData) => {
+    if (room.status === 'ห้องว่าง') {
+      // ถ้า "ว่าง" ให้ไปหน้า Room Detail
+      navigate(`/rooms/${room.room_id}`);
+    } else {
+      // ถ้า "ไม่ว่าง" ให้เปิด Pop-up
+      setShowUnavailableModal(true);
+    }
+  };
+  
+
+  // --- 6. JSX (UI RENDER) ---
+  
   return (
     <div className="dorm-detail-page">
+      
       {/* (Sidebar ซ้ายมาจาก Layout หลัก) */}
       
       {/* ========= 1. ส่วนเนื้อหาหลัก (ตรงกลาง) ========= */}
       <main className="main-content">
         <h2>{dormData.dorm_name}</h2>
 
-        {/* ส่วนรูปภาพหอพัก (Gallery) */}
+        {/* --- Gallery (ใช้ Placeholder) --- */}
         <section className="image-gallery">
-          
-          {/* vvvv FIX 1: เปลี่ยน <img /> เป็น <div> Placeholder vvvv */}
           <div className="main-image">
             [Main Image Placeholder]
           </div>
-          {/* ^^^^ สิ้นสุด Fix 1 ^^^^ */}
-
           <div className="thumbnail-grid">
             <div className="thumbnail">[Image]</div>
             <div className="thumbnail">[Image]</div>
@@ -137,7 +149,7 @@ const DormDetailPage: React.FC = () => {
           </div>
         </section>
 
-        {/* vvvv FIX 2: เพิ่มแท็บทั้งหมด (Tabs) vvvv */}
+        {/* --- Tab Bar --- */}
         <nav className="info-tabs">
           <button
             className={activeTab === 'details' ? 'active' : ''}
@@ -181,16 +193,15 @@ const DormDetailPage: React.FC = () => {
           >
             แผนที่
           </button>
-
         </nav>
-        {/* ^^^^ สิ้นสุด Fix 2 ^^^^ */}
 
-        {/* ส่วนแสดงผลตามแท็บ (Tab Panel) */}
+        {/* --- Tab Panel (แสดงเนื้อหาตาม activeTab) --- */}
         <div className="tab-panel">
+          
           {activeTab === 'details' && (
             <div>
               <h4>รายละเอียดหอพัก</h4>
-              <p>{dormData.description}</p>
+              <p>{dormData.description || "ไม่มีคำอธิบาย"}</p>
             </div>
           )}
           
@@ -200,7 +211,11 @@ const DormDetailPage: React.FC = () => {
               <div className="room-grid">
                 {rooms.length > 0 ? (
                   rooms.map((room) => (
-                    <RoomCard key={room.room_id} room={room} />
+                    <RoomCard 
+                      key={room.room_id} 
+                      room={room}
+                      onViewDetails={handleRoomClick} // (ส่งฟังก์ชันใหม่)
+                    />
                   ))
                 ) : (
                   <p>ไม่มีห้องพักในหอนี้</p>
@@ -209,14 +224,63 @@ const DormDetailPage: React.FC = () => {
             </section>
           )}
 
-          {/* (TODO: เพิ่มเนื้อหาสำหรับแท็บอื่นๆ ที่นี่) */}
-          {activeTab === 'facilities' && <div>แสดงสิ่งอำนวยความสะดวก</div>}
-          {activeTab === 'reviews' && <div>แสดงรีวิว</div>}
+          {activeTab === 'facilities' && (
+            <div className="facilities-list">
+              <h4>สิ่งอำนวยความสะดวก</h4>
+              {dormData.facilities && dormData.facilities.length > 0 ? (
+                <ul>
+                  {dormData.facilities.map((facility, index) => (
+                    <li key={index}>✅ {facility}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>ไม่มีข้อมูลสิ่งอำนวยความสะดวก</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'reviews' && (
+            <div className="reviews-list">
+              <h4>รีวิว</h4>
+              {dormData.reviews && dormData.reviews.length > 0 ? (
+                dormData.reviews.map((review) => (
+                  <div key={review.review_id} className="review-item">
+                    <div className="review-user">
+                      <div className="review-avatar-placeholder"></div>
+                      <strong>{review.user.f_name} {review.user.l_name}</strong>
+                    </div>
+                    <div className="review-content">
+                      <span className="review-score">
+                        {'⭐'.repeat(review.score)}
+                      </span>
+                      <p>{review.content}</p>
+                      <span className="review-date">
+                        {new Date(review.created_at).toLocaleDateString('th-TH', {
+                          year: 'numeric', month: 'long', day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>ยังไม่มีรีวิวสำหรับหอพักนี้</p>
+              )}
+            </div>
+          )}
+          
+          {/* vvvv FIX: แสดง BookingForm เมื่อแท็บ "การจอง" ถูกเลือก vvvv */}
+          {activeTab === 'booking' && (
+            <BookingForm dorm={dormData} />
+          )}
+
+          {activeTab === 'rules' && <div><h4>ข้อกำหนด</h4><p>เนื้อหาข้อกำหนด...</p></div>}
+          {activeTab === 'map' && <div><h4>แผนที่</h4><p>Lat: {dormData.lat}, Long: {dormData.long}</p></div>}
+          
         </div>
       </main>
 
       {/* ========= 2. ส่วน Sidebar ข้อมูล (ด้านขวา) ========= */}
-     <aside className="right-sidebar">
+      <aside className="right-sidebar">
         
         {/* --- Occupancy Status (New UI) --- */}
         <section className="info-section">
@@ -224,11 +288,11 @@ const DormDetailPage: React.FC = () => {
           <div className="occupancy-grid">
             <div className="occupancy-box">
               <span>จำนวนห้องว่าง</span>
-              <strong>{rooms.filter(r => r.status === 'ห้องว่าง').length}</strong>
+              <strong>{availableRooms}</strong>
             </div>
             <div className="occupancy-box">
               <span>จำนวนผู้เข้าพัก</span>
-              <strong>N/A</strong>
+              <strong>{occupiedRooms}</strong>
             </div>
           </div>
         </section>
@@ -241,17 +305,19 @@ const DormDetailPage: React.FC = () => {
               {/* (Placeholder) */}
             </div>
             <strong className="owner-name">
-              {dormData.owner.f_name} {dormData.owner.l_name}
+              {dormData.owner?.f_name} {dormData.owner?.l_name}
             </strong>
             <span className="owner-handle">
-              @{dormData.line_id} {/* (สมมติว่าใช้ line_id เป็น handle) */}
+              @{dormData.line_id}
             </span>
+            
             <div className="owner-rating">
-              {'⭐'.repeat(Math.round(dormData.avg_score))}
+              {'⭐'.repeat(Math.round(avgScoreNumber))}
+              <span> {avgScoreNumber.toFixed(1)} ({dormData.reviews?.length || 0} รีวิว)</span>
             </div>
 
             <div className="owner-details-list">
-              <p><strong>ชื่อ:</strong> <span>{dormData.owner.f_name} {dormData.owner.l_name}</span></p>
+              <p><strong>ชื่อ:</strong> <span>{dormData.owner?.f_name} {dormData.owner?.l_name}</span></p>
               <p><strong>เบอร์โทร:</strong> <span>{dormData.tel}</span></p>
               <p><strong>Line:</strong> <span>{dormData.line_id}</span></p>
             </div>
@@ -270,10 +336,32 @@ const DormDetailPage: React.FC = () => {
           </button>
           <button className="chat-btn">แชทกับเจ้าของหอ</button>
         </div>
-        <button className="book-now-btn-v2">จองหอพัก</button>
+        
+        {/* vvvv FIX: ปุ่มนี้จะสลับไปที่แท็บ "การจอง" vvvv */}
+        <button 
+          className="book-now-btn-v2"
+          onClick={() => setActiveTab('booking')}
+        >
+          จองหอพัก
+        </button>
 
       </aside>
-      {/* ^^^^ สิ้นสุดส่วน <aside> ที่แทนที่ ^^^^ */}
+
+      {/* --- Modal (Pop-up) --- */}
+      {showUnavailableModal && (
+        <div className="modal-backdrop" onClick={() => setShowUnavailableModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>ห้องพักนี้ไม่ว่าง</h3>
+            <p>ขออภัย ห้องพักที่คุณเลือกถูกจองแล้ว หรือยังไม่พร้อมให้บริการในขณะนี้</p>
+            <button 
+              className="modal-close-btn"
+              onClick={() => setShowUnavailableModal(false)}
+            >
+              ปิด
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

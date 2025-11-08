@@ -1,52 +1,68 @@
-/* DormDetailPage.css */
-
-/* --- 1. Layout หลัก (แบ่งเนื้อหาหลัก กับ Sidebar ขวา) --- */
+/* === 1. Layout หลัก === */
 .dorm-detail-page {
   display: flex;
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
-  gap: 24px; /* ระยะห่างระหว่าง 2 ส่วน */
+  gap: 24px;
 }
 
-/* --- 2. ส่วนเนื้อหาหลัก (ตรงกลาง) --- */
 .main-content {
-  flex: 3; /* ให้พื้นที่ 3 ส่วน (กว้าง) */
+  flex: 3;
+  min-width: 0; /* ป้องกันการบีบอัด */
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* --- 3. Sidebar ด้านขวา --- */
-.right-sidebar {
-  flex: 1; /* ให้พื้นที่ 1 ส่วน (แคบ) */
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* === 2. Gallery (Placeholder) === */
+.image-gallery {
+  /* (สไตล์สำหรับ Gallery) */
 }
-
-/*
- * --- 4. ส่วนตารางห้อง (สำคัญมาก) ---
- * นี่คือส่วนที่แก้ปัญหา UI เพี้ยนในรูปที่ 3
- * เราสั่งให้ .room-grid ใช้ "display: grid"
- */
-.room-grid {
+.main-image {
+  height: 400px;
+  background-color: #f0f2f5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a0;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.thumbnail-grid {
   display: grid;
-  /* auto-fill: ให้เติมการ์ดให้เต็มพื้นที่
-    minmax(250px, 1fr): การ์ดแต่ละใบกว้างอย่างน้อย 250px 
-                       และขยายได้เท่าๆ กัน (1fr)
-  */
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px; /* ระยะห่างระหว่างการ์ด */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.thumbnail {
+  height: 100px;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0a0;
+}
+.thumbnail-more {
+  background-color: #e0e0e0;
+  color: #333;
+  cursor: pointer;
 }
 
 
-/* (ส่วน CSS อื่นๆ สำหรับ Tabs, Gallery, Owner Info) */
-/* ... (ใส่ CSS จากที่ผมเคยให้ไว้ก่อนหน้านี้) ... */
-
+/* === 3. Tab Bar (ที่ถูกต้อง) === */
 .info-tabs {
   display: flex;
   border-bottom: 2px solid #e0e0e0;
+  margin-top: 16px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.info-tabs::-webkit-scrollbar {
+  display: none;
 }
 .info-tabs button {
   padding: 12px 20px;
@@ -56,89 +72,38 @@
   font-weight: 600;
   color: #666;
   cursor: pointer;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-}
-.info-tabs button.active {
-  color: #0056b3;
-  border-bottom-color: #0056b3;
-}
-.info-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-.owner-info {
-  /* ... (สไตล์ของ Owner Info) ... */
-}
-
-/* ... (CSS อื่นๆ ที่มีอยู่แล้ว) ... */
-
-
-/* === CSS สำหรับ "แถบแท็บ" (Tab Bar) === */
-
-.info-tabs {
-  display: flex; /* <-- คำสั่งนี้สำคัญที่สุด ทำให้ปุ่มเรียงแนวนอน */
-  border-bottom: 2px solid #e0e0e0; /* เส้นสีเทาใต้แท็บ */
-  margin-top: 16px;
-  
-  /* ทำให้เลื่อนซ้าย-ขวาได้ ถ้าปุ่มล้นจอ */
-  overflow-x: auto;
-  
-  /* ซ่อน scrollbar (ถ้าต้องการ) */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-.info-tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
-}
-
-
-.info-tabs button {
-  padding: 12px 20px;
-  border: none;
-  background-color: transparent;
-  font-size: 16px;
-  font-weight: 600;
-  color: #666; /* สีตัวอักษรปกติ (สีเทา) */
-  cursor: pointer;
-  white-space: nowrap; /* กันไม่ให้คำตกบรรทัด */
-  
-  /* เส้นขีดล่างที่ซ่อนไว้ */
+  white-space: nowrap;
   border-bottom: 3px solid transparent; 
-  margin-bottom: -2px; /* ดึงปุ่มลงมาทับเส้นเทาหลัก */
-  
+  margin-bottom: -2px;
   transition: color 0.2s, border-bottom-color 0.2s;
 }
-
 .info-tabs button:hover {
-  color: #000; /* สีตอนเอาเมาส์ชี้ */
+  color: #000;
 }
-
 .info-tabs button.active {
-  color: #0d6efd; /* สีตัวอักษร (สีน้ำเงิน) ตอนที่ถูกเลือก */
-  border-bottom-color: #0d6efd; /* แสดงเส้นสีน้ำเงินข้างล่าง */
+  color: #0d6efd;
+  border-bottom-color: #0d6efd;
 }
 
-/* === CSS สำหรับเนื้อหาของแท็บ === */
+/* === 4. Tab Panel (เนื้อหาแท็บ) === */
 .tab-panel {
   margin-top: 20px;
 }
 
-/* (ใน DormDetailPage.css) */
+/* 4.1 Room Grid (ส่วนที่ซ่อม UI เพี้ยน) */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
 
-/* ... (CSS อื่นๆ ที่มีอยู่) ... */
-
-
-/* === CSS สำหรับ Facilities === */
+/* 4.2 Facilities List */
 .facilities-list ul {
   list-style: none;
   padding: 0;
   margin-top: 16px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 2-3 คอลัมน์ */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 12px;
 }
 .facilities-list li {
@@ -148,16 +113,16 @@
   border-radius: 6px;
 }
 
-
-/* === CSS สำหรับ Reviews === */
+/* 4.3 Reviews List */
 .reviews-list {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .review-item {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 16px;
   background-color: #fff;
 }
 .review-user {
@@ -180,28 +145,22 @@
   color: #333;
 }
 .review-content .review-score {
-  color: #f5c518; /* สีดาว */
+  color: #f5c518;
 }
 .review-content .review-date {
   font-size: 12px;
   color: #888;
 }
-/* (ใน DormDetailPage.css) */
-
-/* ... (CSS ของ .main-content, .room-grid ฯลฯ ให้คงไว้) ... */
 
 
-/* vvvvv (ลบ CSS .right-sidebar .info-card .owner-info ของเก่าทิ้ง) vvvvv
-  และ (เพิ่ม CSS ชุดใหม่นี้สำหรับ Sidebar ด้านขวา) 
-*/
-
+/* === 5. Right Sidebar (UI ใหม่ที่ถูกต้อง) === */
 .right-sidebar {
   flex: 1;
-  min-width: 320px; /* กำหนดความกว้างขั้นต่ำ */
-  max-width: 350px; /* กำหนดความกว้างสูงสุด */
+  min-width: 320px;
+  max-width: 350px;
   display: flex;
   flex-direction: column;
-  gap: 24px; /* ระยะห่างระหว่าง Section */
+  gap: 24px;
 }
 
 .info-section h4 {
@@ -210,13 +169,12 @@
   margin-bottom: 12px;
 }
 
-/* --- 1. Occupancy Status (New UI) --- */
+/* 5.1 Occupancy Status */
 .occupancy-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-
 .occupancy-box {
   background-color: #f8f9fa;
   border: 1px solid #e0e0e0;
@@ -238,7 +196,7 @@
   margin-top: 4px;
 }
 
-/* --- 2. Owner Card (New UI) --- */
+/* 5.2 Owner Card */
 .owner-card-v2 {
   background-color: #f8f9fa;
   border: 1px solid #e0e0e0;
@@ -246,10 +204,9 @@
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* จัดกลางทั้งหมด */
+  align-items: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-
 .owner-avatar-placeholder-v2 {
   width: 90px;
   height: 90px;
@@ -272,7 +229,6 @@
   color: #666;
   margin-bottom: 16px;
 }
-
 .owner-details-list {
   width: 100%;
   margin-bottom: 20px;
@@ -290,7 +246,6 @@
   color: #000;
   font-weight: 500;
 }
-
 .view-owner-details-btn-v2 {
   width: 100%;
   padding: 10px;
@@ -307,12 +262,11 @@
   background-color: #d4d4d4;
 }
 
-/* --- 3. Booking Actions (New UI) --- */
+/* 5.3 Booking Actions */
 .booking-actions-v2 {
   display: flex;
   gap: 12px;
 }
-
 .heart-btn {
   background-color: #f8f9fa;
   border: 1px solid #e0e0e0;
@@ -320,16 +274,15 @@
   padding: 12px;
   font-size: 20px;
   cursor: pointer;
-  color: #555; /* สีเทาปกติ */
+  color: #555;
   transition: all 0.2s;
 }
 .heart-btn.liked {
-  color: #dc3545; /* สีแดงเมื่อกด */
+  color: #dc3545;
   border-color: #dc3545;
 }
-
 .chat-btn {
-  flex-grow: 1; /* ยืดเต็มพื้นที่ที่เหลือ */
+  flex-grow: 1;
   background-color: #f8f9fa;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
@@ -343,10 +296,9 @@
 .chat-btn:hover {
   background-color: #f1f1f1;
 }
-
 .book-now-btn-v2 {
   width: 100%;
-  background-color: #0d6efd; /* สีน้ำเงิน */
+  background-color: #0d6efd;
   border: none;
   border-radius: 12px;
   padding: 14px;
@@ -358,4 +310,77 @@
 }
 .book-now-btn-v2:hover {
   background-color: #0b5ed7;
+}
+
+/* (Loading/Error) */
+.loading-container, .error-message {
+  padding: 40px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* (พื้นหลังมืด) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  animation: modal-fade-in 0.2s ease-out;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-content p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 24px;
+  margin-top: 10px;
+}
+
+.modal-close-btn {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.modal-close-btn:hover {
+  background-color: #0b5ed7;
+}
+
+/* (Animation) */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

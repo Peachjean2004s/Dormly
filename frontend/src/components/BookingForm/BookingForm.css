@@ -1,0 +1,104 @@
+.booking-form-card {
+  width: 100%;
+  max-width: 700px; /* (ขยายให้กว้างขึ้นหน่อย) */
+  margin: 0 auto; /* (จัดกลาง) */
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 24px 32px 32px 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.booking-form-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.booking-form-subtitle {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-group select,
+.form-group input[type="date"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  background-color: #fdfdfd;
+}
+
+.date-range-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.date-range-picker input {
+  flex: 1;
+}
+.date-range-picker span {
+  color: #555;
+  font-size: 14px;
+}
+
+/* --- ปุ่ม --- */
+.booking-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 24px;
+}
+
+.btn-back,
+.btn-confirm {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-back {
+  background-color: #f0f2f5;
+  color: #333;
+  border: 1px solid #dcdcdc;
+}
+.btn-back:hover {
+  background-color: #e2e6ea;
+}
+
+.btn-confirm {
+  background-color: #6c5ce7; /* (สีม่วง) */
+  color: white;
+}
+.btn-confirm:hover {
+  background-color: #5a4bd0;
+}
