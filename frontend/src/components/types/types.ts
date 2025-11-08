@@ -94,3 +94,26 @@ export interface DormData {
   // vvvv FIX: เพิ่มบรรทัดนี้กลับเข้ามา vvvv
   room_types: RoomTypeData[]; 
 }
+
+// (Interface สำหรับหน้า RoomDetailPage)
+export interface RoomDetailData {
+  room_id: number;
+  room_name: string;
+  status: string;
+  room_type_name: string;
+  rent_per_month: number;
+  rent_per_day: number;
+  deposit_amount: number;
+  max_occupancy: number;
+  room_type_id: number; // <--- 1. เพิ่มนี้
+  dorm_id: number; // <--- 2. เพิ่มนี้
+  dorm_name: string;
+  tel: string;
+  line_id: string;
+  avg_score: number;
+  owner: {
+    f_name: string;
+    l_name: string;
+    profile_path: string;
+  };
+}

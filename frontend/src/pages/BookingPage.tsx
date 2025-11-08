@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import BookingForm from '../components/BookingForm/BookingForm';
-import { DormData, ApiResponse } from '../components/types/types'; 
-import './BookingPage.css'; 
+import { DormData, ApiResponse } from '../components/types/types'; // (Import Type จากไฟล์กลาง)
+import './BookingPage.css'; // (สร้างไฟล์ CSS ใหม่สำหรับจัด Layout)
 
 const BookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // (ดึง ID หอพักจาก URL)

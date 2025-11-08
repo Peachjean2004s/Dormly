@@ -35,60 +35,34 @@ class Dorm {
       if (!dormId || isNaN(dormId)) {
         throw new Error('Invalid dorm ID');
       }
-
-      const query = `
+const query = `
         SELECT 
-          d.*, 
+          r.*, 
+          rt.room_type_name, rt.room_type_desc, rt.max_occupancy, 
+          rt.rent_per_month, rt.rent_per_day, rt.deposit_amount,
           
-          -- FIX: สร้าง nested owner object ที่ Frontend ต้องการ
-          JSON_BUILD_OBJECT(
-            'f_name', u.f_name,
-            'l_name', u.l_name,
-            'profile_path', u.profile_path,
-            'email', u.email
-          ) as owner,
-
+          d.dorm_id, -- <--- 1. เพิ่มบรรทัดนี้
+          d.dorm_name, d.tel, d.line_id, d.avg_score,
+          
           (
-            SELECT JSON_AGG(room_type_data)
-            FROM (
-              SELECT DISTINCT ON (rt.room_type_id)
-                JSON_BUILD_OBJECT(
-                  'room_type_id', rt.room_type_id,
-                  'room_type_name', rt.room_type_name,
-                  'room_type_desc', rt.room_type_desc,
-                  'max_occupancy', rt.max_occupancy,
-                  'deposit_amount', rt.deposit_amount,
-                  'rent_per_month', rt.rent_per_month,
-                  'rent_per_day', rt.rent_per_day,
-                  'total_rooms', (
-                    SELECT COUNT(*) 
-                    FROM "Rooms" r 
-                    WHERE r.room_type_id = rt.room_type_id
-                  ),
-                  'available_rooms', (
-                    SELECT COUNT(*) 
-                    FROM "Rooms" r 
-                    WHERE r.room_type_id = rt.room_type_id AND r.status = 'ห้องว่าง'
-                  )
-                ) as room_type_data
-              FROM "RoomTypes" rt
-              WHERE rt.dorm_id = d.dorm_id
-              ORDER BY rt.room_type_id
-            ) room_types_subquery
-          ) as room_types,
-          COALESCE(array_agg(DISTINCT f.faci_name) FILTER (WHERE f.faci_name IS NOT NULL), '{}') as facilities
-        FROM "Dorms" d
-        LEFT JOIN "DormOwners" dorm_owner ON d.owner_id = dorm_owner.dorm_own_id
-        LEFT JOIN "Users" u ON dorm_owner.user_id = u.user_id
-        LEFT JOIN "FacilityList" fl ON d.dorm_id = fl.dorm_id
-        LEFT JOIN "Facilities" f ON fl.faci_id = f.faci_id
-        WHERE d.dorm_id = $1
-        GROUP BY d.dorm_id, u.user_id -- (GROUP BY u.user_id ยังคงจำเป็น)
+            -- ... (Subquery ดึง Owner) ...
+          ) as owner
+          
+        FROM "Rooms" r
+        JOIN "RoomTypes" rt ON r.room_type_id = rt.room_type_id
+        JOIN "Dorms" d ON rt.dorm_id = d.dorm_id
+        WHERE r.room_id = $1;
       `;
-      const result = await pool.query(query, [dormId]);
+      
+      const result = await pool.query(query, [roomId]);
+      
+      if (!result.rows[0]) {
+        throw new Error('Room not found');
+      }
       return result.rows[0];
+
     } catch (error) {
-      console.error('Error fetching dorm by ID:', error);
+      console.error('Error fetching room by ID:', error);
       throw error;
     }
   }

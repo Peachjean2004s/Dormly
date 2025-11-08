@@ -1,57 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import './RoomDetailPage.css'; // (เราจะสร้างไฟล์ CSS นี้)
-import OwnerInfoCard from '../components/OwnerInfoCard/OwnerInfoCard'; // (Import Component ใหม่)
+import { useParams, useNavigate } from 'react-router-dom';
+import './RoomDetailPage.css'; 
+import OwnerInfoCard from '../components/OwnerInfoCard/OwnerInfoCard';
 
-// (Type สำหรับข้อมูลที่ API ส่งมา)
-interface RoomDetailData {
-  room_id: number;
-  room_name: string;
-  status: string;
-  room_type_name: string;
-  rent_per_month: number;
-  rent_per_day: number;
-  deposit_amount: number;
-  max_occupancy: number;
-  // (เพิ่ม field อื่นๆ จาก DB ตามต้องการ)
-
-  // ข้อมูล Dorm ที่ Join มา
-  dorm_name: string;
-  tel: string;
-  line_id: string;
-  avg_score: number;
-  
-  // ข้อมูล Owner ที่ Join มา
-  owner: {
-    f_name: string;
-    l_name: string;
-    profile_path: string;
-  };
-}
+// (Import Types ใหม่)
+import { RoomDetailData, DormData, ApiResponse } from '../components/types/types'; 
 
 const RoomDetailPage: React.FC = () => {
-  const { roomId } = useParams<{ roomId: string }>(); // (ดึง roomId จาก URL)
+  const { roomId } = useParams<{ roomId: string }>(); 
+  const navigate = useNavigate();
   
   const [roomData, setRoomData] = useState<RoomDetailData | null>(null);
+  const [dormData, setDormData] = useState<DormData | null>(null); // (State ใหม่สำหรับเก็บ DormData)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!roomId) return;
 
-    const fetchRoomData = async () => {
+    const fetchAllData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:3001/api/rooms/${roomId}`);
-        if (!response.ok) throw new Error('Failed to fetch room data');
+        // 1. Fetch ข้อมูลห้อง (Room) ก่อน
+        const roomResponse = await fetch(`http://localhost:3001/api/rooms/${roomId}`);
+        if (!roomResponse.ok) throw new Error('Failed to fetch room data');
         
-        const result = await response.json();
-        if (result.success && result.data) {
-          setRoomData(result.data);
-        } else {
-          throw new Error(result.message || 'Room not found');
+        const roomResult: ApiResponse<RoomDetailData> = await roomResponse.json();
+        if (!roomResult.success || !roomResult.data) {
+          throw new Error(roomResult.message || 'Room not found');
         }
+        setRoomData(roomResult.data);
+
+        // 2. เมื่อได้ dorm_id จากข้อมูลห้อง ให้ Fetch ข้อมูลหอ (Dorm)
+        const dormId = roomResult.data.dorm_id;
+        const dormResponse = await fetch(`http://localhost:3001/api/dorms/${dormId}`);
+        if (!dormResponse.ok) throw new Error('Failed to fetch dorm data');
+
+        const dormResult: ApiResponse<DormData> = await dormResponse.json();
+        if (dormResult.success && dormResult.data) {
+          setDormData(dormResult.data);
+        } else {
+          throw new Error(dormResult.message || 'Dorm not found');
+        }
+
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('An unknown error occurred');
@@ -60,8 +52,18 @@ const RoomDetailPage: React.FC = () => {
       }
     };
 
-    fetchRoomData();
+    fetchAllData();
   }, [roomId]);
+
+  const handleBookNowClick = () => {
+    if (!dormData || !roomData) return;
+
+    // (นำทางไปที่หน้า BookingPage ใหม่)
+    navigate(`/dorms/${dormData.dorm_id}/book`, { 
+      // (ส่ง ID ห้องที่เลือกไปล่วงหน้า)
+      state: { preselectedRoomTypeId: roomData.room_type_id } 
+    });
+  };
 
   if (isLoading) {
     return <div className="loading-container">Loading Room Details...</div>;
@@ -69,7 +71,7 @@ const RoomDetailPage: React.FC = () => {
   if (error) {
     return <div className="error-message">Error: {error}</div>;
   }
-  if (!roomData) {
+  if (!roomData || !dormData) {
     return <div className="error-message">Room data not available.</div>;
   }
 
@@ -79,14 +81,13 @@ const RoomDetailPage: React.FC = () => {
     tel: roomData.tel,
     line_id: roomData.line_id,
     avg_score: roomData.avg_score,
-    review_count: 0, // (API นี้ยังไม่ได้ดึง Review count มา, ใส่ 0 ไว้ก่อน)
+    review_count: dormData.reviews?.length || 0, // (ดึงจำนวนรีวิวจาก dormData)
   };
 
   return (
     <div className="room-detail-page">
       {/* (Sidebar ซ้ายมาจาก Layout หลัก) */}
       
-      {/* === ส่วนหัว === */}
       <h2 className="room-detail-header">
         {roomData.dorm_name} - {roomData.room_name}
       </h2>
@@ -94,7 +95,6 @@ const RoomDetailPage: React.FC = () => {
       <div className="room-detail-layout">
         {/* === 1. ส่วนเนื้อหาหลัก (ซ้าย) === */}
         <main className="room-main-content">
-          {/* Gallery */}
           <section className="room-gallery">
             <div className="room-main-image">[Image Placeholder]</div>
             <div className="room-thumbnail-grid">
@@ -104,23 +104,21 @@ const RoomDetailPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Info Boxes */}
           <div className="room-info-grid">
             <div className="info-box">
               <h4>ข้อมูลในห้อง</h4>
               <ul>
-                <li>ขนาดห้อง: 24 ตร.ม.</li>
+                <li>ขนาดห้อง: (รอ API) ตร.ม.</li>
                 <li>ประเภทผู้เข้าพัก: {roomData.max_occupancy} คน</li>
-                {/* (เพิ่มข้อมูลอื่นๆ จาก roomData) */}
+                <li>สถานะ: {roomData.status}</li>
               </ul>
             </div>
             <div className="info-box">
               <h4>สิ่งอำนวยความสะดวก</h4>
               <ul>
-                <li>ทีวี</li>
-                <li>แอร์</li>
-                <li>เครื่องทำน้ำอุ่น</li>
-                {/* (ข้อมูลนี้ต้องดึงมาจาก API เพิ่ม) */}
+                {/* (ข้อมูลนี้ต้องมาจาก API) */}
+                <li>ทีวี (ตัวอย่าง)</li>
+                <li>แอร์ (ตัวอย่าง)</li>
               </ul>
             </div>
           </div>
@@ -145,15 +143,15 @@ const RoomDetailPage: React.FC = () => {
             </div>
             <div className="price-item">
               <span>จ่ายล่วงหน้า:</span>
-              <strong>1 เดือน</strong>
+              <strong>(รอ API) เดือน</strong>
             </div>
             <div className="price-item">
               <span>ค่าไฟ:</span>
-              <strong>5 บาท/ยูนิต</strong>
+              <strong>(รอ API) บาท/ยูนิต</strong>
             </div>
             <div className="price-item">
               <span>ค่าน้ำ:</span>
-              <strong>10 บาท/ยูนิต</strong>
+              <strong>(รอ API) บาท/ยูนิต</strong>
             </div>
           </div>
 
@@ -162,7 +160,11 @@ const RoomDetailPage: React.FC = () => {
           
           {/* Buttons */}
           <button className="edit-dorm-btn">แก้ไขรายละเอียดหอพัก</button>
-          <button className="book-room-btn">จองห้องพัก</button>
+          
+          {/* vvvv FIX: เพิ่ม onClick vvvv */}
+          <button className="book-room-btn" onClick={handleBookNowClick}>
+            จองห้องพัก
+          </button>
         </aside>
       </div>
     </div>

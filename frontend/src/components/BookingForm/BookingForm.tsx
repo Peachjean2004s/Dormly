@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DormData, RoomTypeData } from '../types/types' 
-import './BookingForm.css'; 
+// (Import useLocation ถ้าคุณยังใช้ pre-select)
+import { useNavigate, useLocation } from 'react-router-dom';
+import { DormData, RoomTypeData } from '../types/types'; 
+import './BookingForm.css';
 
 interface BookingFormProps {
   dorm: DormData;
@@ -9,42 +10,33 @@ interface BookingFormProps {
 
 const BookingForm: React.FC<BookingFormProps> = ({ dorm }) => {
   const navigate = useNavigate();
+  const location = useLocation(); 
 
-  // (State สำหรับเก็บข้อมูลในฟอร์ม)
-  const [selectedRoomTypeId, setSelectedRoomTypeId] = useState('');
+  const preselectedId = location.state?.preselectedRoomTypeId;
+
+  const [selectedRoomTypeId, setSelectedRoomTypeId] = useState(preselectedId?.toString() || '');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // vvvv FIX: แก้ไขฟังก์ชันนี้ vvvv
   const handleConfirm = () => {
-    // (ตรวจสอบข้อมูลเบื้องต้น)
+    // 1. ตรวจสอบข้อมูล
     if (!selectedRoomTypeId || !startDate || !endDate) {
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
-    // (ค้นหาข้อมูล RoomType ที่เลือก เพื่อส่งราคาไปหน้า Payment)
-    const selectedRoomType = dorm.room_types.find(
-      (rt) => rt.room_type_id.toString() === selectedRoomTypeId
-    );
+    // (TODO: ในอนาคต เราจะบันทึกข้อมูลนี้ลง Context หรือ State ที่ใหญ่กว่า)
+    console.log('ข้อมูลการจองที่เลือก:', {
+      selectedRoomTypeId,
+      startDate,
+      endDate
+    });
 
-    // (รวบรวมข้อมูลทั้งหมดเพื่อส่งไปหน้าจ่ายเงิน)
-    const bookingDetails = {
-      dormData: {
-        dorm_id: dorm.dorm_id,
-        dorm_name: dorm.dorm_name,
-        medias: dorm.medias,
-      },
-      selectedRoomType: selectedRoomType, // (ส่ง Object ของ RoomType ไปเลย)
-      startDate: startDate,
-      endDate: endDate,
-      // (TODO: คำนวณราคารวมที่ซับซ้อนกว่านี้)
-      totalPrice: selectedRoomType ? selectedRoomType.rent_per_month : 0 
-    };
-
-    // (นำทางไปหน้า /payment พร้อมส่งข้อมูล)
-    // (คุณต้องแน่ใจว่า <PaymentFlow> ใน App.tsx รับ state ชื่อ 'bookingDetails')
-    navigate('/payment', { state: { bookingDetails: bookingDetails } }); 
+    // 2. นำทางกลับไปหน้าก่อนหน้า (คือ DormDetailPage หรือ RoomDetailPage)
+    navigate(-1); 
   };
+  // ^^^^ สิ้นสุด FIX ^^^^
 
   return (
     <div className="booking-form-card">
@@ -64,14 +56,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ dorm }) => {
           >
             <option value="" disabled>เลือกประเภทห้องพัก</option>
             {dorm.room_types && dorm.room_types.length > 0 ? (
-              // (FIX: ใช้ Type ที่ Import มา)
               dorm.room_types.map((rt: RoomTypeData) => ( 
                 <option key={rt.room_type_id} value={rt.room_type_id}>
                   {rt.room_type_name} (ราคา {rt.rent_per_month} บาท)
                 </option>
               ))
             ) : (
-              <option disabled>ไม่พบประเภทห้องพัก (กรุณาซ่อม Backend)</option>
+              <option disabled>ไม่พบประเภทห้องพัก</option>
             )}
           </select>
         </div>
@@ -85,7 +76,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ dorm }) => {
               id="start-date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              // (กำหนด min date เป็นวันนี้)
               min={new Date().toISOString().split('T')[0]} 
             />
             <span>ถึง</span>
@@ -94,7 +84,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ dorm }) => {
               id="end-date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              // (กำหนด min date เป็นวันที่เริ่ม)
               min={startDate || new Date().toISOString().split('T')[0]} 
             />
           </div>
